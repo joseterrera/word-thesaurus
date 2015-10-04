@@ -1,0 +1,111 @@
+<!doctype html>
+<meta name="robots" content="noindex">
+<html>
+<head>
+<meta charset="utf-8">
+<title>Yay APIs! Big Huge Thesaurus</title>
+<link rel="stylesheet" type="text/css" href="bootstrap.css">
+</head>
+<body>
+
+<div class="container">
+
+ <div class="row">
+   <div class="span1">
+   </div>
+   <div class="span11">
+    <h2 class="page-header">Words Words Words</h2>
+
+     <div class="form">
+      <form id="wordLookup">
+        <fieldset>
+          <legend>A Helpful Thesaurus Lookup</legend>
+          <label>Word</label>
+          <input type="text" id="myWord">
+          <span class="help-block">Type one word..</span>
+          <button type="submit" class="btn" id="myWordButton">Submit</button>
+        </fieldset>
+      </form>
+     </div>
+     
+     <h3 id="wordHeader"></h3>
+     
+     <div id="results"></div>
+  </div>
+</div>
+
+
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script>
+//To Create a thesaurus
+// divide the task in parts
+//1. you need to set up the api key for thesaurus and check that objects are being returned to the console
+// you can check the ajax call by doing console.log and see if they print
+//2. you need to create on one hand a jquery list with json objects
+
+//1a. create a click event, preventdefault and define important variables: one that stores the value of the input, andother one with the apikey. 
+$( ".btn" ).click(function(e) {
+   e.preventDefault();
+  var input = $('input#myWord').val();
+  var ajaxUrl = 'http://words.bighugelabs.com/' + 'insertyourapikey' + input + '/json';
+//1b. make ajax call with success callback, here you can test console.log to check that objects are being returned. The ajax call will be made if you actually insert something in the input.
+  if(input.length > 0 ) {
+    $.ajax({
+      type: 'GET',
+      dataType: 'jsonp',
+      url: ajaxUrl,
+      success: function(json){
+        //console.log(data);
+        parseJsonData(input, json);
+
+      }  
+    });
+  } else {
+    alert("you must enter a word.");
+  }
+});
+
+//adding results to the page
+function parseJsonData(insertedWord, jsonData){
+  //empty will empty previous results
+   $('div#results').empty();
+   //you can check the nodes of your document by examining the DOM with google chrome
+  $('h3#wordHeader').text('Results for: ' + insertedWord);
+  
+  //each() iterates over an object an uses an executes whatever the function indicates, in this case, type will indicate the type of word, and words will bring up the words related to it.
+  $.each(jsonData, function(type, words){
+    $('div#results').append('<h4>' + type + '</h4>');
+   
+    if(words.syn !== undefined) {
+      createList('synonyms', words.syn );
+    }
+    if(words.ant !== undefined) {
+      createList('antonym', words.ant);
+    }
+    if(words.rel !== undefined) {
+      createList('related terms', words.rel);
+    } 
+    if(words.sim !== undefined) {
+      createList('similar words', words.sim)
+    }
+    // console.log(type);
+     //console.log(words);
+  });
+
+}
+
+//create a separate function that iterates the type
+function createList(id, words){
+ var $wordsList = $('div#results');
+ $wordsList.append('<h4>' +  id + '</h4>');
+ $wordsList.append('<ul id="' + id + '"></ul>');
+
+//forEach is a js method that has a callback function with 2 arguments: current element being processed, index of the element in the array (i), array in which foreach is being applied to.
+ words.forEach(function(words){
+    $('ul#' + id).append('<li>' + words + '</li>');
+ });
+}
+
+</script>
+</body>
+</html>
